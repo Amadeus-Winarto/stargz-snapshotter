@@ -124,6 +124,10 @@ var samplerFlags = []cli.Flag{
 		Name:  "net-host",
 		Usage: "enable host networking in the container",
 	},
+	&cli.Int64Flag{
+		Name:  "shm-size",
+		Usage: "sets the size of the /dev/shm mount for the container.",
+	},
 }
 
 func getSpecOpts(clicontext *cli.Context) func(image containerd.Image, rootfs string) (opts []oci.SpecOpts, done func() error, rErr error) {
@@ -215,6 +219,9 @@ func getSpecOpts(clicontext *cli.Context) func(image containerd.Image, rootfs st
 			} else {
 				opts = append(opts, nvidia.WithGPUs(nvidia.WithDevices(clicontext.IntSlice("gpus")...), nvidia.WithAllCapabilities))
 			}
+		}
+		if shmSize := clicontext.Int64("shm-size"); shmSize > 0 {
+			opts = append(opts, oci.WithDevShmSize(shmSize))
 		}
 
 		return
