@@ -124,6 +124,10 @@ var samplerFlags = []cli.Flag{
 		Name:  "net-host",
 		Usage: "enable host networking in the container",
 	},
+	&cli.BoolFlag{
+		Name:  "ipc-host",
+		Usage: "enable host IPC namespace in the container",
+	},
 	&cli.Int64Flag{
 		Name:  "shm-size",
 		Usage: "sets the size of the /dev/shm mount for the container.",
@@ -211,6 +215,13 @@ func getSpecOpts(clicontext *cli.Context) func(image containerd.Image, rootfs st
 				log.L.Warn("option --net-host is not supported on Windows")
 			} else {
 				opts = append(opts, oci.WithHostNamespace(runtimespec.NetworkNamespace), oci.WithHostHostsFile, oci.WithHostResolvconf)
+			}
+		}
+		if clicontext.Bool("ipc-host") {
+			if runtime.GOOS == "windows" {
+				log.L.Warn("option --ipc-host is not supported on Windows")
+			} else {
+				opts = append(opts, oci.WithHostNamespace(runtimespec.IPCNamespace))
 			}
 		}
 		if clicontext.IsSet("gpus") {
